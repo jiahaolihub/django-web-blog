@@ -1,0 +1,53 @@
+{% extends "blog/base.html" %}
+{% block content %}
+    <article class="media content-section">
+        <img class="rounded-circle article-img" src="{{ object.author.profile.image.url }}">
+        <div class="media-body">
+            <div class="article-metadata">
+                <div class="clearfix">
+                    <span class="float-left"><a class="mr-2" href="{% url 'user-posts' object.author.username %}">{{ object.author }}</a></span> <!-- passing username variable-->
+                    <span class="float-left"><small class="text-muted">{{ object.date_posted|date:"F d, Y" }}</small></span>
+                    <!-- <span class="float-right"><p class="text-info">{{ total_likes }} like{{ total_likes|pluralize}}</p></span> -->
+                </div>
+                {% if object.author == user %}
+                    <div>
+                        <a class="btn btn-outline-secondary btn-sm mt-1 mb-1" href="{% url 'post-update' object.id %}">Update</a> <!-- passing id (pk) variable-->
+                        <a class="btn btn-outline-danger btn-sm mt-1 mb-1" href="{% url 'post-delete' object.id %}">Delete</a> <!-- passing id (pk) variable-->
+                    </div>
+                {% endif %}
+            </div>
+            <h2 class="article-title">{{ object.title }}</h2>
+            <p class="article-content">{{ object.content }}</p>
+            {% if user.is_authenticated %}
+                <div class="clearfix">
+                    <form action="{% url 'like_post' object.pk %}" method="POST">
+                        {% csrf_token %}
+                        {% if post_is_liked %}
+                            <span class="float-left"><button class="btn btn-outline-info btn-sm" type="submit" name="post_id" value="{{ object.id }}"><i class="fa fa-heart fa-lg" aria-hidden="true"></i> ({{ total_likes }})</button></span>
+                        {% else %}
+                            <span class="float-left"><button class="btn btn-outline-info btn-sm" type="submit" name="post_id" value="{{ object.id }}"><i class="fa fa-heart-o fa-lg" aria-hidden="true"></i> ({{ total_likes }})</button></span>
+                        {% endif %}
+                    </form>
+                    <span class="float-left"><a class="btn btn-outline-secondary btn-sm ml-2" type="button" href="{% url 'add-comment' object.id %}"><i class="fa fa-commenting-o fa-lg" aria-hidden="true"></i> ({{ object.comments.count }})</a></span>
+                </div>
+                <hr/>
+                <h4 class="post-comment-h4">Comments({{ object.comments.count }})</h4>
+                {% if not post.comments.all %}
+                    <p>No comments yet.</p>
+                {% else %}
+                    {% for comment in post.comments.all %}
+                        <div class="ml-3">
+                            <strong>
+                                {{ comment.name }}
+                            </strong>
+                            <small><i>posted on {{ comment.date_added }}</i></small>
+                            <br/>
+                            <p>{{ comment.content }}</p>
+                            <hr/>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endif %}
+        </div>
+    </article>
+{% endblock content %}
